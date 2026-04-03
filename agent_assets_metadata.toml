@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "1Cis0C6lqWRFiQCq41dMJ"
+uri = "file://artifacts/simulador-fretes/public/modelo-transportadoras.xlsx"
+type = "table"
+title = "Modelo - Transportadoras + Origens.xlsx"
+
+[[outputs]]
+id = "SQdPDiDxFVQMh51-kN_aC"
+uri = "file://artifacts/simulador-fretes/public/modelo-taxas-especiais.xlsx"
+type = "table"
+title = "Modelo - Taxas Especiais.xlsx"
