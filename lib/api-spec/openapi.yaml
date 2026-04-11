@@ -1,0 +1,965 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: API specification - Simulador de Fretes
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: base-rotas
+    description: Base de Rotas
+  - name: base-fretes
+    description: Base de Fretes / Tabelas de Preços
+  - name: simulador
+    description: Simulador de Fretes
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Base de Rotas ────────────────────────────────────────────
+  /base-rotas:
+    get:
+      operationId: listBaseRotas
+      tags: [base-rotas]
+      summary: Listar todas as bases de rotas
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de bases de rotas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseRotasListResponse"
+    post:
+      operationId: createBaseRota
+      tags: [base-rotas]
+      summary: Criar uma base de rotas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBaseRota"
+      responses:
+        "201":
+          description: Base de rota criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseRota"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /base-rotas/{id}:
+    get:
+      operationId: getBaseRota
+      tags: [base-rotas]
+      summary: Buscar base de rotas por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Base de rota
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseRota"
+        "404":
+          description: Não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateBaseRota
+      tags: [base-rotas]
+      summary: Atualizar base de rotas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBaseRota"
+      responses:
+        "200":
+          description: Base de rota atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseRota"
+    delete:
+      operationId: deleteBaseRota
+      tags: [base-rotas]
+      summary: Excluir base de rotas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Excluído com sucesso
+
+  # ─── Rotas (itens da Base de Rotas) ───────────────────────────
+  /base-rotas/{baseRotaId}/rotas:
+    get:
+      operationId: listRotas
+      tags: [base-rotas]
+      summary: Listar rotas de uma base
+      parameters:
+        - name: baseRotaId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de rotas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RotasListResponse"
+    post:
+      operationId: createRota
+      tags: [base-rotas]
+      summary: Criar rota
+      parameters:
+        - name: baseRotaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRota"
+      responses:
+        "201":
+          description: Rota criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rota"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /base-rotas/{baseRotaId}/rotas/{id}:
+    put:
+      operationId: updateRota
+      tags: [base-rotas]
+      summary: Atualizar rota
+      parameters:
+        - name: baseRotaId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRota"
+      responses:
+        "200":
+          description: Rota atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rota"
+    delete:
+      operationId: deleteRota
+      tags: [base-rotas]
+      summary: Excluir rota
+      parameters:
+        - name: baseRotaId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Excluído com sucesso
+
+  # ─── Base de Fretes ────────────────────────────────────────────
+  /base-fretes:
+    get:
+      operationId: listBaseFretes
+      tags: [base-fretes]
+      summary: Listar bases de fretes
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de bases de fretes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseFreteListResponse"
+    post:
+      operationId: createBaseFrete
+      tags: [base-fretes]
+      summary: Criar base de frete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBaseFrete"
+      responses:
+        "201":
+          description: Base de frete criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseFrete"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /base-fretes/{id}:
+    get:
+      operationId: getBaseFrete
+      tags: [base-fretes]
+      summary: Buscar base de frete por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Base de frete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseFrete"
+        "404":
+          description: Não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateBaseFrete
+      tags: [base-fretes]
+      summary: Atualizar base de frete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBaseFrete"
+      responses:
+        "200":
+          description: Base de frete atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseFrete"
+    delete:
+      operationId: deleteBaseFrete
+      tags: [base-fretes]
+      summary: Excluir base de frete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Excluído com sucesso
+
+  # ─── Cotações (itens da Base de Frete) ────────────────────────
+  /base-fretes/{baseFreteId}/cotacoes:
+    get:
+      operationId: listCotacoes
+      tags: [base-fretes]
+      summary: Listar cotações de uma base de frete
+      parameters:
+        - name: baseFreteId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de cotações
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CotacoesListResponse"
+    post:
+      operationId: createCotacao
+      tags: [base-fretes]
+      summary: Criar cotação
+      parameters:
+        - name: baseFreteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCotacao"
+      responses:
+        "201":
+          description: Cotação criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cotacao"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /base-fretes/{baseFreteId}/cotacoes/{id}:
+    put:
+      operationId: updateCotacao
+      tags: [base-fretes]
+      summary: Atualizar cotação
+      parameters:
+        - name: baseFreteId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCotacao"
+      responses:
+        "200":
+          description: Cotação atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cotacao"
+    delete:
+      operationId: deleteCotacao
+      tags: [base-fretes]
+      summary: Excluir cotação
+      parameters:
+        - name: baseFreteId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Excluído com sucesso
+
+  # ─── Simulador ────────────────────────────────────────────────
+  /simulador/calcular:
+    post:
+      operationId: calcularFrete
+      tags: [simulador]
+      summary: Calcular frete para uma rota
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimuladorInput"
+      responses:
+        "200":
+          description: Resultado do cálculo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimuladorResultado"
+        "404":
+          description: Rota não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /simulador/resumo:
+    get:
+      operationId: getSimuladorResumo
+      tags: [simulador]
+      summary: Resumo geral do sistema
+      responses:
+        "200":
+          description: Resumo do sistema
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimuladorResumo"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    # ─── Base de Rotas ──────────────────────────────────────────
+    BaseRota:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        ativo:
+          type: boolean
+        totalRotas:
+          type: integer
+        criadoEm:
+          type: string
+        atualizadoEm:
+          type: string
+      required:
+        - id
+        - nome
+        - ativo
+        - totalRotas
+        - criadoEm
+        - atualizadoEm
+
+    CreateBaseRota:
+      type: object
+      properties:
+        nome:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        ativo:
+          type: boolean
+      required:
+        - nome
+
+    BaseRotasListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseRota"
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+      required:
+        - data
+        - total
+        - page
+        - pageSize
+
+    # ─── Rotas ──────────────────────────────────────────────────
+    Rota:
+      type: object
+      properties:
+        id:
+          type: integer
+        baseRotaId:
+          type: integer
+        ibgeOrigem:
+          type: string
+        ibgeDestino:
+          type: string
+        cepInicioFaixa:
+          type: ["string", "null"]
+        cepFimFaixa:
+          type: ["string", "null"]
+        nomeRota:
+          type: string
+        prazoEntregaDias:
+          type: integer
+        valorMinimoFrete:
+          type: number
+        percentualAdvalorem:
+          type: number
+        percentualGris:
+          type: number
+        valorPedagio:
+          type: number
+        valorEntrega:
+          type: number
+        pesoMaximoKg:
+          type: ["number", "null"]
+        ativo:
+          type: boolean
+        criadoEm:
+          type: string
+        atualizadoEm:
+          type: string
+      required:
+        - id
+        - baseRotaId
+        - ibgeOrigem
+        - ibgeDestino
+        - nomeRota
+        - prazoEntregaDias
+        - valorMinimoFrete
+        - percentualAdvalorem
+        - percentualGris
+        - valorPedagio
+        - valorEntrega
+        - ativo
+        - criadoEm
+        - atualizadoEm
+
+    CreateRota:
+      type: object
+      properties:
+        ibgeOrigem:
+          type: string
+        ibgeDestino:
+          type: string
+        cepInicioFaixa:
+          type: ["string", "null"]
+        cepFimFaixa:
+          type: ["string", "null"]
+        nomeRota:
+          type: string
+        prazoEntregaDias:
+          type: integer
+        valorMinimoFrete:
+          type: number
+        percentualAdvalorem:
+          type: number
+        percentualGris:
+          type: number
+        valorPedagio:
+          type: number
+        valorEntrega:
+          type: number
+        pesoMaximoKg:
+          type: ["number", "null"]
+        ativo:
+          type: boolean
+      required:
+        - ibgeOrigem
+        - ibgeDestino
+        - nomeRota
+        - prazoEntregaDias
+        - valorMinimoFrete
+        - percentualAdvalorem
+        - percentualGris
+        - valorPedagio
+        - valorEntrega
+
+    RotasListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Rota"
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+      required:
+        - data
+        - total
+        - page
+        - pageSize
+
+    # ─── Base de Frete ──────────────────────────────────────────
+    BaseFrete:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        transportadora:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        baseRotaId:
+          type: integer
+        baseRotaNome:
+          type: ["string", "null"]
+        ativo:
+          type: boolean
+        totalCotacoes:
+          type: integer
+        criadoEm:
+          type: string
+        atualizadoEm:
+          type: string
+      required:
+        - id
+        - nome
+        - transportadora
+        - baseRotaId
+        - ativo
+        - totalCotacoes
+        - criadoEm
+        - atualizadoEm
+
+    CreateBaseFrete:
+      type: object
+      properties:
+        nome:
+          type: string
+        transportadora:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        baseRotaId:
+          type: integer
+        ativo:
+          type: boolean
+      required:
+        - nome
+        - transportadora
+        - baseRotaId
+
+    BaseFreteListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseFrete"
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+      required:
+        - data
+        - total
+        - page
+        - pageSize
+
+    # ─── Cotações ───────────────────────────────────────────────
+    Cotacao:
+      type: object
+      properties:
+        id:
+          type: integer
+        baseFreteId:
+          type: integer
+        rotaId:
+          type: integer
+        nomeRota:
+          type: ["string", "null"]
+        modalidade:
+          type: string
+          description: "Ex: RODOVIARIO, AEREO, FLUVIAL"
+        faixaPesoInicio:
+          type: number
+        faixaPesoFim:
+          type: number
+        valorKg:
+          type: number
+        valorFixo:
+          type: number
+        percentualFrete:
+          type: number
+        ativo:
+          type: boolean
+        criadoEm:
+          type: string
+        atualizadoEm:
+          type: string
+      required:
+        - id
+        - baseFreteId
+        - rotaId
+        - modalidade
+        - faixaPesoInicio
+        - faixaPesoFim
+        - valorKg
+        - valorFixo
+        - percentualFrete
+        - ativo
+        - criadoEm
+        - atualizadoEm
+
+    CreateCotacao:
+      type: object
+      properties:
+        rotaId:
+          type: integer
+        modalidade:
+          type: string
+        faixaPesoInicio:
+          type: number
+        faixaPesoFim:
+          type: number
+        valorKg:
+          type: number
+        valorFixo:
+          type: number
+        percentualFrete:
+          type: number
+        ativo:
+          type: boolean
+      required:
+        - rotaId
+        - modalidade
+        - faixaPesoInicio
+        - faixaPesoFim
+        - valorKg
+        - valorFixo
+        - percentualFrete
+
+    CotacoesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Cotacao"
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+      required:
+        - data
+        - total
+        - page
+        - pageSize
+
+    # ─── Simulador ──────────────────────────────────────────────
+    SimuladorInput:
+      type: object
+      properties:
+        baseFreteId:
+          type: integer
+        ibgeOrigem:
+          type: string
+        ibgeDestino:
+          type: string
+        cepDestino:
+          type: ["string", "null"]
+        pesoKg:
+          type: number
+        valorNf:
+          type: number
+        modalidade:
+          type: ["string", "null"]
+      required:
+        - baseFreteId
+        - ibgeOrigem
+        - ibgeDestino
+        - pesoKg
+        - valorNf
+
+    SimuladorResultado:
+      type: object
+      properties:
+        encontrado:
+          type: boolean
+        rotaId:
+          type: ["integer", "null"]
+        nomeRota:
+          type: ["string", "null"]
+        baseFreteNome:
+          type: string
+        transportadora:
+          type: string
+        modalidade:
+          type: ["string", "null"]
+        prazoEntregaDias:
+          type: ["integer", "null"]
+        pesoKg:
+          type: number
+        valorNf:
+          type: number
+        valorFretePeso:
+          type: number
+        valorFixo:
+          type: number
+        valorAdvalorem:
+          type: number
+        valorGris:
+          type: number
+        valorPedagio:
+          type: number
+        valorEntrega:
+          type: number
+        valorTotalFrete:
+          type: number
+        valorMinimoAplicado:
+          type: boolean
+        mensagem:
+          type: ["string", "null"]
+      required:
+        - encontrado
+        - baseFreteNome
+        - transportadora
+        - pesoKg
+        - valorNf
+        - valorFretePeso
+        - valorFixo
+        - valorAdvalorem
+        - valorGris
+        - valorPedagio
+        - valorEntrega
+        - valorTotalFrete
+        - valorMinimoAplicado
+
+    SimuladorResumo:
+      type: object
+      properties:
+        totalBaseRotas:
+          type: integer
+        totalRotas:
+          type: integer
+        totalBaseFretes:
+          type: integer
+        totalCotacoes:
+          type: integer
+        totalSimulacoes:
+          type: integer
+      required:
+        - totalBaseRotas
+        - totalRotas
+        - totalBaseFretes
+        - totalCotacoes
+        - totalSimulacoes
